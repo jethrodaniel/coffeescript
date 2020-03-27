@@ -82,7 +82,11 @@ missingTask = (task) -> fatalError "No such task: #{task}"
 # When `cake` is invoked, search in the current and all parent directories
 # to find the relevant Cakefile.
 cakefileDirectory = (dir) ->
-  return dir if fs.existsSync path.join dir, 'Cakefile'
+  cakefiles = ['Cakefile', 'cakefile', 'cakefile.coffee', 'Cakefile.coffee']
+  return dir if cakefiles.some (cakefile_name) ->
+    fs.existsSync path.join dir, cakefile_name
   parent = path.normalize path.join dir, '..'
   return cakefileDirectory parent unless parent is dir
-  throw new Error "Cakefile not found in #{process.cwd()}"
+  throw new Error """
+    Cakefile not found in #{process.cwd()} (looking for: #{cakefiles.join ', '})
+  """
